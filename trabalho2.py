@@ -25,6 +25,15 @@ tabela_slr = {
 
     (9,  '$'): ('acc', None)
 }
+
+ #GOTO 
+tabela_goto = {
+    (0, 'Condicao'): 5,
+    (0, 'id'): 6,
+    (2, 'Condicao'): 10,
+    (6, 'id'): 13
+}
+
  #SLR grammar
 producoes = {
     0: ('Comando', ['6', '7', '11', '16', 'Condicao', '21']),   #0 Comando -> 6 7 11 16 Condicao 21
@@ -64,11 +73,10 @@ def analisador_sintatico(tokens):
                 pilha.pop()
             estado_topo = pilha[-1]
             pilha.append(esquerda)
-            goto = tabela_slr.get((estado_topo, esquerda))
-            if goto is None:
+            novo_estado = tabela_goto.get((estado_topo, esquerda))
+            if novo_estado is None:
                 print(f"[ERRO] GOTO não encontrado para ({estado_topo}, {esquerda})")
                 return
-            novo_estado = goto[1]
             pilha.append(novo_estado)
 
             print(f"[REDUÇÃO] {esquerda} -> {' '.join(direita)}")   # PRINT PRA VER A PILHA, TIPO DEBUG, REMOVER DPS DE ARRUMAR
