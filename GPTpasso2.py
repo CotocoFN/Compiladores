@@ -1,4 +1,4 @@
-# TABELA SLR (AÇÕES)
+# TABELA SLR (ações)
 tabela_slr = {
     (0,  '6'): ('s', 1),
     (1,  '7'): ('s', 2),
@@ -35,23 +35,24 @@ tabela_goto = {
     (10,      'id'): 13
 }
 
-# GRAMÁTICA
+# Produções
 producoes = {
-    0: ('Comando', ['6', '7', '11', '16', 'Condicao', '21']),   # Comando -> SELECT * FROM WHERE Condicao ;
-    1: ('Condicao', ['id', 'Operador', 'id']),                  # Condicao -> id Operador id
-    2: ('Operador', ['18']),                                    # Operador -> =
-    3: ('Operador', ['19']),                                    # Operador -> !
-    4: ('id', ['17']),                                          # id -> a
-    5: ('id', ['20'])                                           # id -> b
+    0: ('Comando', ['6', '7', '11', '16', 'Condicao', '21']),
+    1: ('Condicao', ['id', 'Operador', 'id']),
+    2: ('Operador', ['18']),
+    3: ('Operador', ['19']),
+    4: ('id', ['17']),
+    5: ('id', ['20'])
 }
 
 def analisador_sintatico(tokens):
     pilha = [0]
     indice_token = 0
-    tabela_simbolos = []
-    modo_from = True  # Indica se estamos ainda lendo FROM ou já no WHERE
 
-    print("\n==== INICIANDO ANÁLISE ====\n")
+    # Tabela de Símbolos pré-definida (os ids válidos)
+    tabela_simbolos = ['17']  # por exemplo: '17' = a, '20' = b
+
+    print(f"Tabela de Símbolos pré-definida: {tabela_simbolos}")
 
     while True:
         estado_atual = pilha[-1]
@@ -59,26 +60,20 @@ def analisador_sintatico(tokens):
 
         acao = tabela_slr.get((estado_atual, simbolo_atual))
         if not acao:
-            print(f"[ERRO] Token inesperado: '{simbolo_atual}' no estado {estado_atual}")
+            print(f"[ERRO SINTÁTICO] Token inesperado: '{simbolo_atual}' no estado {estado_atual}")
             return
         tipo, valor = acao
 
-        # SHIFT
         if tipo == 's':
             pilha.append(simbolo_atual)
             pilha.append(valor)
             indice_token += 1
+            print(f"[SHIFT] Estado {estado_atual} -> {simbolo_atual}, empilhando {valor}")
 
-            if simbolo_atual == '16':  # '16' é WHERE
-                modo_from = False
-
-            print(f"[DESLOCAMENTO] Estado {estado_atual} -> {simbolo_atual}, empilhando {valor}")
-
-        # REDUCE
         elif tipo == 'r':
             esquerda, direita = producoes[valor]
 
-            # Coletar símbolos consumidos
+            # Pega os símbolos reduzidos
             simbolos_reduzidos = []
             for _ in range(2 * len(direita)):
                 simbolos_reduzidos.insert(0, pilha.pop())
@@ -91,44 +86,34 @@ def analisador_sintatico(tokens):
                 return
             pilha.append(novo_estado)
 
-            print(f"[REDUÇÃO] {direita} -> {esquerda}")
+            print(f"[REDUCE] {direita} -> {esquerda}")
 
-            # Semântica: guardar IDs ou checar IDs
-            if esquerda == 'id':
-                id_token = simbolos_reduzidos[-1]
-                if modo_from:
-                    if id_token not in tabela_simbolos:
-                        tabela_simbolos.append(id_token)
-                        print(f"[INFO] Declarado no FROM: {id_token}")
-                else:
-                    print(f"[INFO] Encontrado id em WHERE: {id_token}")
-
+            # Verificação semântica na Condicao
             if esquerda == 'Condicao':
-                # Condicao -> id Operador id
                 id1 = simbolos_reduzidos[0]
                 id2 = simbolos_reduzidos[2]
-                print(f"[CHECK SEMÂNTICA] WHERE: {id1} = {id2}")
+                print(f"[SEMÂNTICA] Verificando WHERE: {id1} = {id2}")
+
                 if id1 not in tabela_simbolos or id2 not in tabela_simbolos:
-                    print(f"[ERRO SEMÂNTICO] Identificador não declarado no FROM: {id1} ou {id2}")
+                    print(f"[ERRO SEMÂNTICO] Identificador não permitido no WHERE: {id1} ou {id2}")
                     return
                 else:
-                    print("[SEMÂNTICA OK] Identificadores do WHERE declarados no FROM.")
+                    print("[SEMÂNTICA OK] Identificadores permitidos.")
 
-        # ACCEPT
         elif tipo == 'acc':
-            print("[ACEITO] Análise sintática bem-sucedida.")
+            print("[ACEITO] Análise sintática e semântica bem-sucedida.")
             return
 
         else:
-            print("[ERRO] Ação desconhecida na tabela.")
+            print("[ERRO] Ação desconhecida.")
             return
 
-# Exemplo de uso
+# Exemplos de uso
 if __name__ == "__main__":
-    print("\n===== EXEMPLO ACEITO =====")
-    fita_entrada1 = ['6', '7', '11', '16', '20', '18', '20', '21', '$']
+    print("\n===== Exemplo ACEITO =====")
+    fita_entrada1 = ['6', '7', '11', '16', '17', '18', '20', '21', '$']
     analisador_sintatico(fita_entrada1)
 
-    print("\n===== EXEMPLO ERRO SEMÂNTICO =====")
-    fita_entrada2 = ['6', '7', '11', '16', '17', '18', '22', '21', '$']
-    analisador_sintatico(fita_entrada2)
+    # print("\n===== Exemplo ERRO SEMÂNTICO =====")
+    # fita_entrada2 = ['6', '7', '11', '16', '30', '18', '20', '21', '$']
+    # analisador_sintatico(fita_entrada2)
