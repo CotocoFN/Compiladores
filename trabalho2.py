@@ -30,12 +30,12 @@ tabela_slr = {
 # REDUÇÕES
 reducoes = { 
 # ação r: (vai ser Esquerda, se toda a Direita for...)
-    0: ('Comando', ['6', '7', '11', '16', 'Condicao', '21']),   #0 Comando -> 6 7 11 16 Condicao 21
+    0: ('Comando' , ['6', '7', '11', '16', 'Condicao', '21']),  #0 Comando -> 6 7 11 16 Condicao 21
     1: ('Condicao', ['id', 'Operador', 'id']),                  #1 Condicao -> id Operador id
     2: ('Operador', ['18']),                                    #2 Operador -> 18
     3: ('Operador', ['19']),                                    #3 Operador -> 19
-    4: ('id', ['17']),                                          #4 id -> 17
-    5: ('id', ['20'])                                           #5 id -> 20
+    4: ('id'      , ['17']),                                    #4 id -> 17
+    5: ('id'      , ['20'])                                     #5 id -> 20
 }
  #GOTO 
 tabela_goto = { #faz logo depois da redução
@@ -49,6 +49,9 @@ tabela_goto = { #faz logo depois da redução
 def analisador_sintatico(tokens):
     pilha = [0]
     indice_token = 0
+    
+    tabela_simbolos = ['a', 'b', 'x', 'y']
+    modo_from = True
 
     while True:
         estado_atual = pilha[-1]
@@ -60,7 +63,7 @@ def analisador_sintatico(tokens):
             return
         tipo, valor = acao # recebe tipo ('s', 1)
 
-        # EMPILHA
+        # SWITCH EMPILHA
         if tipo == 's':
             pilha.append(simbolo_atual)
             pilha.append(valor)
@@ -69,7 +72,7 @@ def analisador_sintatico(tokens):
             print(f"[DESLOCAMENTO] Estado {estado_atual} -> {simbolo_atual}, empilhando {valor}")
 
         # REDUÇÃO
-        elif tipo == 'r':  
+        elif tipo == 'r': 
             esquerda, direita = reducoes[valor]
             for _ in range(2 * len(direita)):
                 pilha.pop()
@@ -82,6 +85,19 @@ def analisador_sintatico(tokens):
             pilha.append(novo_estado)
 
             print(f"[REDUÇÃO] {esquerda} -> {' '.join(direita)}")   # PRINT PRA VER A PILHA, TIPO DEBUG, REMOVER DPS DE ARRUMAR
+
+            # if esquerda == 'Condicao':
+            #     # Condicao -> id Operador id
+            #     id1 = simbolos_reduzidos[0]
+            #     id2 = simbolos_reduzidos[2]
+            #     print(f"Verificando semântica: {id1} = {id2}")
+
+            #     if id1 not in tabela_simbolos or id2 not in tabela_simbolos:
+            #         print(f"[ERRO SEMÂNTICO] Identificador não permitido: {id1} ou {id2}")
+            #         return
+            #     else:
+            #         print("[SEMÂNTICA OK] Identificadores aceitos na Tabela de Símbolos.")
+
 
         elif tipo == 'acc':
             print("[ACEITO] Análise sintática bem-sucedida.")
