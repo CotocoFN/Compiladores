@@ -11,6 +11,7 @@ tabela_slr = {
     (4, '20'): ('s', 8),
     (10,'20'): ('s', 8),
 
+
     (7, '21'): ('r', 4),
     (8, '21'): ('r', 5),
     (13,'21'): ('r', 1),
@@ -28,11 +29,22 @@ tabela_slr = {
 
  #GOTO 
 tabela_goto = {
-    (0, 'Condicao'): 5,
-    (0, 'id'): 6,
-    (2, 'Condicao'): 10,
-    (6, 'id'): 13
+    (0, 'Comando'): 6,
+    (1, 'Comando'): 7,
+    (2, 'Comando'): 11,
+    (3, 'Comando'): 16,
+    (4, 'Condicao'): 21,
+    (5, 'Condicao'): 21,
+    (4, 'id'): 6,
+    (6, 'Condicao'): 18,
+    (6, 'Operador'): 10,
+    (10, 'Condicao'): 20,
+    (10, 'id'): 13,
+    (11, 'Condicao'): 2,
+    (12, 'Condicao'): 3,
 }
+
+
 
  #SLR grammar
 producoes = {
@@ -52,7 +64,6 @@ def analisador_sintatico(tokens):
         estado_atual = pilha[-1]
         simbolo_atual = tokens[indice_token] # da entrada
         acao = tabela_slr.get((estado_atual, simbolo_atual)) #Pega da tabela, por exemplo: (0, '6'), retorna como ('s', 1)
-
         if not acao:
             print(f"[ERRO] Token inesperado: '{simbolo_atual}' no estado {estado_atual}")
             return
