@@ -10,7 +10,7 @@ tabela_slr = {
     (10,'17'): ('s', 7),
     (4, '20'): ('s', 8),
     (10,'20'): ('s', 8),
-
+#   (estado atual, simbolo atual): faz ação S e empilha o valor
 
     (7, '21'): ('r', 4),
     (8, '21'): ('r', 5),
@@ -27,33 +27,23 @@ tabela_slr = {
     (9,  '$'): ('acc', None)
 }
 
- #GOTO 
-tabela_goto = {
-    (0, 'Comando'): 6,
-    (1, 'Comando'): 7,
-    (2, 'Comando'): 11,
-    (3, 'Comando'): 16,
-    (4, 'Condicao'): 21,
-    (5, 'Condicao'): 21,
-    (4, 'id'): 6,
-    (6, 'Condicao'): 18,
-    (6, 'Operador'): 10,
-    (10, 'Condicao'): 20,
-    (10, 'id'): 13,
-    (11, 'Condicao'): 2,
-    (12, 'Condicao'): 3,
-}
-
-
-
- #SLR grammar
-producoes = {
+# REDUÇÕES
+reducoes = { 
+# ação r: (vai ser Esquerda, se toda a Direita for...)
     0: ('Comando', ['6', '7', '11', '16', 'Condicao', '21']),   #0 Comando -> 6 7 11 16 Condicao 21
     1: ('Condicao', ['id', 'Operador', 'id']),                  #1 Condicao -> id Operador id
     2: ('Operador', ['18']),                                    #2 Operador -> 18
     3: ('Operador', ['19']),                                    #3 Operador -> 19
     4: ('id', ['17']),                                          #4 id -> 17
     5: ('id', ['20'])                                           #5 id -> 20
+}
+ #GOTO 
+tabela_goto = { #faz logo depois da redução
+#   (estado_atual, Esquerda): novo_estado
+    (4, 'Condicao'): 5,
+    (4,       'id'): 6,
+    (6, 'Operador'): 10,
+    (10,      'id'): 13
 }
 
 def analisador_sintatico(tokens):
@@ -64,6 +54,7 @@ def analisador_sintatico(tokens):
         estado_atual = pilha[-1]
         simbolo_atual = tokens[indice_token] # da entrada
         acao = tabela_slr.get((estado_atual, simbolo_atual)) #Pega da tabela, por exemplo: (0, '6'), retorna como ('s', 1)
+
         if not acao:
             print(f"[ERRO] Token inesperado: '{simbolo_atual}' no estado {estado_atual}")
             return
@@ -79,7 +70,7 @@ def analisador_sintatico(tokens):
 
         # REDUÇÃO
         elif tipo == 'r':  
-            esquerda, direita = producoes[valor]
+            esquerda, direita = reducoes[valor]
             for _ in range(2 * len(direita)):
                 pilha.pop()
             estado_topo = pilha[-1]
@@ -102,5 +93,14 @@ def analisador_sintatico(tokens):
 
 # Exemplo de uso
 if __name__ == "__main__":
+    # 6 = 'SELECT'
+    # 7 = '*'
+    # 11 = 'FROM'
+    # 16 = 'WHERE'
+    # 17 = 'a'
+    # 18 = '='
+    # 19 = '!'
+    # 20 = 'b'
+    # 21 = ';'
     fita_entrada = ['6', '7', '11', '16', '17', '18', '20', '21', '$']  # vindo do analisador léxico
     analisador_sintatico(fita_entrada)
