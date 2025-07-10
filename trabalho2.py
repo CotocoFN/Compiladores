@@ -50,8 +50,7 @@ def analisador_sintatico(tokens):
     pilha = [0]
     indice_token = 0
     
-    tabela_simbolos = ['a', 'b', 'x', 'y']
-    modo_from = True
+    # tabela_simbolos = ['18', '20']
 
     while True:
         estado_atual = pilha[-1]
